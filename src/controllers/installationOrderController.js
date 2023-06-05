@@ -28,10 +28,12 @@ const createInstallationOrders = asyncHandler(async (req, res) => {
         }
         installationOrder.checkItems = checkItems;
       }
+      installationOrder.files = [];
       await InstallationOrder.create(installationOrder);
     }
     res.status(200).json(salesOrders);
   } catch (error) {
+    console.log(error);
     res.status(400);
     throw error;
   }
@@ -83,18 +85,24 @@ const setupInstallationOrder = asyncHandler(async (req, res) => {
 const editInstallationOrder = asyncHandler(async (req, res) => {
   try {
     const { installationOrderId, update } = req.body;
+    console.log(update);
     const installationOrder = await InstallationOrder.findById(
       installationOrderId
     );
+
     //delete installation order id from installationOrders field for previous deliverers and installers
     await deleteUserInstallationOrdersInfo(installationOrder);
+
+    //add installation order id to installationOrders field for new deliverers and installers
+    await updateUserInstallationOrdersInfo(update, installationOrderId);
+
+    //set _id and fullName for deliverer and installer
     const updateInstallationOrder = await InstallationOrder.findByIdAndUpdate(
       installationOrderId,
       update,
       { new: true }
     );
-    //add installation order id to installationOrders field for new deliverers and installers
-    await updateUserInstallationOrdersInfo(update, installationOrderId);
+
     //upload pdf files to Azure blob storage
     await uploadPdfFilesToAzure(
       updateInstallationOrder.installationOrderNumber,
@@ -109,6 +117,7 @@ const editInstallationOrder = asyncHandler(async (req, res) => {
     }
   } catch (error) {
     res.status(400);
+    console.log(error);
     throw error;
   }
 });
@@ -163,6 +172,25 @@ const getInstallationOrders = asyncHandler(async (req, res) => {
       .limit(pageSize);
     if (installationOrders) {
       res.status(200).send(installationOrders);
+    } else {
+      res.status(400);
+      throw new Error('Invalid query ');
+    }
+  } catch (error) {
+    res.status(400);
+    throw error;
+  }
+});
+
+// @desc    get installation order by id
+// @request get
+// @route   /admin/installationorders/:id
+// @acccess Private & protected by adminAuth
+const getInstallationOrder = asyncHandler(async (req, res) => {
+  try {
+    const installationOrder = await InstallationOrder.findById(req.params.id);
+    if (installationOrder) {
+      res.status(200).send(installationOrder);
     } else {
       res.status(400);
       throw new Error('Invalid query ');
@@ -236,7 +264,6 @@ const getUsersAndFiles = asyncHandler(async (req, res) => {
       throw new Error('Installation order not found');
     }
   } catch (error) {
-    console.log(error.message);
     res.status(400);
     throw error;
   }
@@ -379,8 +406,9 @@ const deleteUserInstallationOrdersInfo = (installationOrder) => {
     try {
       //delete installation order id from delievery user's installation order field
       for (let i = 0; i < installationOrder.deliverers.length; i++) {
-        const userId = installationOrder.deliverers[i].id;
-        const deliverer = await User.findOne({ _id: userId });
+        const deliverer = await User.findById(
+          installationOrder.deliverers[i].id
+        );
         const installationOrders = deliverer.installationOrders.filter(
           (iOrder) => {
             if (!iOrder.equals(installationOrder._id)) return iOrder;
@@ -392,8 +420,9 @@ const deleteUserInstallationOrdersInfo = (installationOrder) => {
       }
       //delete installation order id from installation user's installation order field
       for (let i = 0; i < installationOrder.installers.length; i++) {
-        const userId = installationOrder.installers[i].id;
-        const installer = await User.findOne({ _id: userId });
+        const installer = await User.findById(
+          installationOrder.installers[i].id
+        );
         const installationOrders = installer.installationOrders.filter(
           (iOrder) => {
             if (!iOrder.equals(installationOrder._id)) return iOrder;
@@ -416,6 +445,7 @@ module.exports = {
   editInstallationOrder,
   deleteInstallationOrder,
   getInstallationOrders,
+  getInstallationOrder,
   getTotalCount,
   getUsersAndFiles,
   updateInstallationOrder,

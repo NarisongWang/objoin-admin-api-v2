@@ -52,7 +52,7 @@ const createUser = asyncHandler(async (req, res) => {
     }
 
     const password = generateRandomPassword(10);
-    console.log(email + ' : ' + password);
+    //console.log(email + ' : ' + password);
 
     const { uid } = await admin.auth().createUser({
       email: email,

@@ -11,6 +11,7 @@ const {
   getUsersAndFiles,
   updateInstallationOrder,
   closeInstallationOrder,
+  getInstallationOrder,
 } = require('../controllers/installationOrderController');
 
 const router = express.Router();
@@ -37,8 +38,13 @@ router.post(
 );
 router
   .route('/admin/installationorders/:id')
-  .get(adminAuth({ hasRole: ['admin', 'manager'] }), getUsersAndFiles)
+  .get(adminAuth({ hasRole: ['admin', 'manager'] }), getInstallationOrder)
   .put(adminAuth({ hasRole: ['admin', 'manager'] }), updateInstallationOrder);
+router.get(
+  '/admin/usersandfiles',
+  adminAuth({ hasRole: ['admin', 'manager'] }),
+  getUsersAndFiles
+);
 router.post(
   '/admin/countorders',
   adminAuth({ hasRole: ['admin', 'manager'] }),
