@@ -33,7 +33,6 @@ const createInstallationOrders = asyncHandler(async (req, res) => {
     }
     res.status(200).json(salesOrders);
   } catch (error) {
-    console.log(error);
     res.status(400);
     throw error;
   }
@@ -85,7 +84,6 @@ const setupInstallationOrder = asyncHandler(async (req, res) => {
 const editInstallationOrder = asyncHandler(async (req, res) => {
   try {
     const { installationOrderId, update } = req.body;
-    console.log(update);
     const installationOrder = await InstallationOrder.findById(
       installationOrderId
     );
@@ -117,7 +115,6 @@ const editInstallationOrder = asyncHandler(async (req, res) => {
     }
   } catch (error) {
     res.status(400);
-    console.log(error);
     throw error;
   }
 });

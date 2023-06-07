@@ -19,9 +19,9 @@ const getAllUsers = asyncHandler(async (req, res) => {
         phoneNumber: user.phoneNumber,
         customClaims: user.customClaims,
         metadata: user.metadata,
+        disabled: user.disabled,
       };
     });
-
     users.sort((a, b) => {
       return a.metadata.creationTime.localeCompare(b.metadata.creationTime);
     });
@@ -52,7 +52,6 @@ const createUser = asyncHandler(async (req, res) => {
     }
 
     const password = generateRandomPassword(10);
-    //console.log(email + ' : ' + password);
 
     const { uid } = await admin.auth().createUser({
       email: email,
@@ -125,7 +124,55 @@ const createUser = asyncHandler(async (req, res) => {
       }
     });
     const result = await admin.auth().listUsers();
-    res.status(201).send(result.users);
+    const users = result.users.map((user) => {
+      return {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        phoneNumber: user.phoneNumber,
+        customClaims: user.customClaims,
+        metadata: user.metadata,
+        disabled: user.disabled,
+      };
+    });
+    users.sort((a, b) => {
+      return a.metadata.creationTime.localeCompare(b.metadata.creationTime);
+    });
+    res.status(201).send(users);
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
+  }
+});
+
+const updateUser = asyncHandler(async (req, res) => {
+  try {
+    const { uid, update } = req.body;
+    await admin.auth().updateUser(uid, update);
+    const result = await admin.auth().listUsers();
+    const users = result.users.map((user) => {
+      return {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        phoneNumber: user.phoneNumber,
+        customClaims: user.customClaims,
+        metadata: user.metadata,
+        disabled: user.disabled,
+      };
+    });
+    users.sort((a, b) => {
+      return a.metadata.creationTime.localeCompare(b.metadata.creationTime);
+    });
+
+    if (users && users.length > 0) {
+      res.status(200).send(users);
+    } else {
+      res.status(400);
+      throw new Error('No user found');
+    }
   } catch (error) {
     res.status(400);
     throw new Error(error.message);
@@ -146,4 +193,5 @@ const generateRandomPassword = (length) => {
 module.exports = {
   getAllUsers,
   createUser,
+  updateUser,
 };

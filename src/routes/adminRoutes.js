@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { getAllUsers, createUser } = require('../controllers/adminController');
+const {
+  getAllUsers,
+  createUser,
+  updateUser,
+} = require('../controllers/adminController');
 const { adminAuth } = require('../middlewares/requireAdminAuth');
 
 router.get(
@@ -12,6 +16,11 @@ router.post(
   '/admin/create-user',
   adminAuth({ hasRole: ['admin', 'manager'] }),
   createUser
+);
+router.post(
+  '/admin/update-user',
+  adminAuth({ hasRole: ['admin', 'manager'] }),
+  updateUser
 );
 
 module.exports = router;

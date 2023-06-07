@@ -9,7 +9,7 @@ const {
 } = require('../controllers/mssqlController');
 
 const router = express.Router();
-router.post(
+router.get(
   '/mssql/employees',
   adminAuth({ hasRole: ['admin', 'manager'] }),
   getEmployees

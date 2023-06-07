@@ -41,7 +41,7 @@ router
   .get(adminAuth({ hasRole: ['admin', 'manager'] }), getInstallationOrder)
   .put(adminAuth({ hasRole: ['admin', 'manager'] }), updateInstallationOrder);
 router.get(
-  '/admin/usersandfiles',
+  '/admin/usersandfiles/:id',
   adminAuth({ hasRole: ['admin', 'manager'] }),
   getUsersAndFiles
 );
