@@ -6,7 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
-var path = require('path');
+const path = require('path');
 const fs = require('fs');
 const adminRoutes = require('./routes/adminRoutes');
 const installationOrderRoutes = require('./routes/installationOrderRoutes');
@@ -28,11 +28,6 @@ app.use(cors());
 app.use(helmet());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(adminRoutes);
-app.use(installationOrderRoutes);
-app.use(mssqlRoutes);
-app.use(checkListRoutes);
-
 //logging
 app.use(
   logger('combined', {
@@ -40,6 +35,11 @@ app.use(
   })
 );
 app.use(logger('combined'));
+
+app.use(adminRoutes);
+app.use(installationOrderRoutes);
+app.use(mssqlRoutes);
+app.use(checkListRoutes);
 
 //error handle
 app.use(errorHandler);
